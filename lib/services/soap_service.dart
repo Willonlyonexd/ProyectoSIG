@@ -151,4 +151,70 @@ class SoapService {
       rethrow;
     }
   }
+
+    // Método para actualizar corte
+  Future<int> actualizarCorte({
+    required int liNcoc,
+    required String ldFcor,
+    required int liCobc,
+    required int liLcor,
+  }) async {
+    final dio = Dio();
+
+    // Definir los valores fijos
+    final int liCemc = 0; // Código de Cliente
+    final int liPres = 0; // Estado de la presentación
+    final int liNofn = 1; // Número de orden de factura
+    final String lsAppName = "FlutterApp"; // Nombre de la aplicación
+
+    final soapEnvelope = '''
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <W3Corte_UpdateCorte xmlns="http://activebs.net/">
+      <liNcoc>$liNcoc</liNcoc> <!-- Número de Corte -->
+      <liCemc>$liCemc</liCemc> <!-- Código de Cliente (fijo en 0) -->
+      <ldFcor>$ldFcor</ldFcor> <!-- Fecha y hora -->
+      <liPres>$liPres</liPres> <!-- Estado de la presentación (fijo en 0) -->
+      <liCobc>$liCobc</liCobc> <!-- Código de cobro -->
+      <liLcor>$liLcor</liLcor> <!-- Código del corte -->
+      <liNofn>$liNofn</liNofn> <!-- Número de orden de factura (fijo en 1) -->
+      <lsAppName>$lsAppName</lsAppName> <!-- Nombre de la aplicación -->
+    </W3Corte_UpdateCorte>
+  </soap:Body>
+</soap:Envelope>
+''';
+
+    try {
+      // Enviar la solicitud SOAP con Dio
+      final response = await dio.post(
+        'http://190.171.244.211:8080/wsVarios/wsBS.asmx',
+        data: soapEnvelope,
+        options: Options(
+          headers: {
+            'Content-Type': 'text/xml; charset=utf-8',
+            'SOAPAction': 'http://activebs.net/W3Corte_UpdateCorte',
+          },
+        ),
+      );
+
+      // Verificar el código de respuesta
+      if (response.statusCode == 200) {
+        final document = XmlDocument.parse(response.data);
+
+        // Obtener el resultado de la respuesta
+        final result = document
+            .findAllElements('W3Corte_UpdateCorteResult')
+            .first
+            .text;
+        return int.parse(result);
+      } else {
+        throw Exception('Error al actualizar corte: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error al actualizar corte: $e');
+      rethrow;
+    }
+  }
+
 }
