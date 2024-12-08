@@ -34,7 +34,6 @@ class MyApp extends StatelessWidget {
         '/registrar_cortes': (context) => RegistrarCortesView(),
         '/exportar_cortes': (context) => ExportarCortesView(),
         '/lista_cortes': (context) => ListaCortesView(),
-        '/prueba': (context) => const PruebaView(),
       },
     );
   }

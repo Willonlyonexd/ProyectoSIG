@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:proyecto_sig/views/prueba_view.dart';
 import '../services/soap_service.dart';
 
 class ImportarCortesView extends StatefulWidget {
@@ -36,6 +37,29 @@ class _ImportarCortesViewState extends State<ImportarCortesView> {
         rutas = resultado;
         isLoading = false;
       });
+      var x = 0;
+      for (var ruta in rutas) {
+        try {
+          final puntos = await _soapService.obtenerReporteParaCortes(
+            int.parse(ruta['id']!.toString()), // ID de la ruta seleccionada
+            0, // Código fijo no se usa aquí
+            1, // Período actual (ajustar si es necesario)
+          );
+
+          setState(() {
+            if (x < 10) {
+              puntosFiltrados.add(puntos[3]);
+            }
+            x++;
+            isLoading = false;
+          });
+        } catch (e) {
+          setState(() {
+            isLoading = false;
+          });
+          print('Error al obtener puntos: $e');
+        }
+      }
     } catch (e) {
       setState(() {
         isLoading = false;
@@ -111,7 +135,11 @@ class _ImportarCortesViewState extends State<ImportarCortesView> {
       appBar: AppBar(title: const Text('Importar Cortes')),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.pushNamed(context, '/prueba');
+          Navigator.push(context, MaterialPageRoute(
+            builder: (context) {
+              return PruebaView(puntos: puntosFiltrados);
+            },
+          ));
         },
         child: const Text('Ver ruta'),
       ),
@@ -234,7 +262,7 @@ class _ImportarCortesViewState extends State<ImportarCortesView> {
                                     crossAxisAlignment: CrossAxisAlignment.end,
                                     children: [
                                       Text(
-                                        'ID: ${punto['bscocNcoc'] + 'asas' ?? 'N/A'}',
+                                        'ID: ${punto['bscocNcoc'] ?? 'N/A'}',
                                         style: const TextStyle(fontSize: 12),
                                       ),
                                     ],

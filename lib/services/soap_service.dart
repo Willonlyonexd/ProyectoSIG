@@ -127,6 +127,18 @@ class SoapService {
         // Procesar los datos de la respuesta
         final puntos = document
             .findAllElements('Table')
+            .where((table) {
+              final latitud =
+                  double.tryParse(table.findElements('bscntlati').first.text);
+              final longitud =
+                  double.tryParse(table.findElements('bscntlogi').first.text);
+
+              // Verificamos que ambas latitud y longitud sean mayores que 0
+              return latitud != null &&
+                  longitud != null &&
+                  latitud != 0 &&
+                  longitud != 0;
+            })
             .map((table) => {
                   'bscocNcoc': table.findElements('bscocNcoc').first.text,
                   'bscntCodf': table.findElements('bscntCodf').first.text,
@@ -151,7 +163,8 @@ class SoapService {
       rethrow;
     }
   }
-    // Método para actualizar corte
+
+  // Método para actualizar corte
   Future<int> actualizarCorte({
     required int liNcoc,
     required String ldFcor,
@@ -202,10 +215,8 @@ class SoapService {
         final document = XmlDocument.parse(response.data);
 
         // Obtener el resultado de la respuesta
-        final result = document
-            .findAllElements('W3Corte_UpdateCorteResult')
-            .first
-            .text;
+        final result =
+            document.findAllElements('W3Corte_UpdateCorteResult').first.text;
         return int.parse(result);
       } else {
         throw Exception('Error al actualizar corte: ${response.statusCode}');
@@ -215,5 +226,4 @@ class SoapService {
       rethrow;
     }
   }
-
 }
