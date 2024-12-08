@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:proyecto_sig/views/prueba_view.dart';
 import '../services/soap_service.dart';
 
 class ImportarCortesView extends StatefulWidget {
+  const ImportarCortesView({super.key});
+
   @override
   _ImportarCortesViewState createState() => _ImportarCortesViewState();
 }
@@ -34,6 +37,29 @@ class _ImportarCortesViewState extends State<ImportarCortesView> {
         rutas = resultado;
         isLoading = false;
       });
+      var x = 0;
+      for (var ruta in rutas) {
+        try {
+          final puntos = await _soapService.obtenerReporteParaCortes(
+            int.parse(ruta['id']!.toString()), // ID de la ruta seleccionada
+            0, // Código fijo no se usa aquí
+            1, // Período actual (ajustar si es necesario)
+          );
+
+          setState(() {
+            if (x < 10) {
+              puntosFiltrados.add(puntos[3]);
+            }
+            x++;
+            isLoading = false;
+          });
+        } catch (e) {
+          setState(() {
+            isLoading = false;
+          });
+          print('Error al obtener puntos: $e');
+        }
+      }
     } catch (e) {
       setState(() {
         isLoading = false;
@@ -44,7 +70,7 @@ class _ImportarCortesViewState extends State<ImportarCortesView> {
 
   Future<void> _obtenerPuntosDeZona() async {
     if (rutaSeleccionada == null) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text('Por favor selecciona una zona'),
       ));
       return;
@@ -76,7 +102,7 @@ class _ImportarCortesViewState extends State<ImportarCortesView> {
 
   void _buscarPorCodigoFijo() {
     if (codigoFijo.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text('Por favor ingresa un código fijo'),
       ));
       return;
@@ -106,9 +132,19 @@ class _ImportarCortesViewState extends State<ImportarCortesView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Importar Cortes')),
+      appBar: AppBar(title: const Text('Importar Cortes')),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(context, MaterialPageRoute(
+            builder: (context) {
+              return PruebaView(puntos: puntosFiltrados);
+            },
+          ));
+        },
+        child: const Text('Ver ruta'),
+      ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
                 // Selector de zona
@@ -116,7 +152,7 @@ class _ImportarCortesViewState extends State<ImportarCortesView> {
                   padding: const EdgeInsets.all(16.0),
                   child: DropdownButton<String>(
                     isExpanded: true,
-                    hint: Text('Selecciona una zona'),
+                    hint: const Text('Selecciona una zona'),
                     value: rutaSeleccionada,
                     items: rutas.map((ruta) {
                       return DropdownMenuItem(
@@ -138,7 +174,7 @@ class _ImportarCortesViewState extends State<ImportarCortesView> {
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: TextField(
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'Código Fijo',
                       border: OutlineInputBorder(),
                     ),
@@ -154,11 +190,11 @@ class _ImportarCortesViewState extends State<ImportarCortesView> {
                   children: [
                     ElevatedButton(
                       onPressed: _obtenerPuntosDeZona,
-                      child: Text('Puntos de Zona'),
+                      child: const Text('Puntos de Zona'),
                     ),
                     ElevatedButton(
                       onPressed: _buscarPorCodigoFijo,
-                      child: Text('Buscar Código Fijo'),
+                      child: const Text('Buscar Código Fijo'),
                     ),
                   ],
                 ),
@@ -167,7 +203,7 @@ class _ImportarCortesViewState extends State<ImportarCortesView> {
                   Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: TextField(
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         labelText: 'Buscar por nombre',
                         border: OutlineInputBorder(),
                       ),
@@ -176,8 +212,9 @@ class _ImportarCortesViewState extends State<ImportarCortesView> {
                   ),
                 // Lista de resultados
                 Expanded(
+                  //enviar solo 10 resultados a la siguiente pagina
                   child: puntosFiltrados.isEmpty
-                      ? Center(child: Text('No hay puntos para mostrar'))
+                      ? const Center(child: Text('No hay puntos para mostrar'))
                       : ListView.builder(
                           itemCount: puntosFiltrados.length,
                           itemBuilder: (context, index) {
@@ -190,8 +227,8 @@ class _ImportarCortesViewState extends State<ImportarCortesView> {
                                 child: ListTile(
                                   title: Text(
                                     punto['dNomb'] ?? 'Sin nombre',
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold),
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold),
                                   ),
                                   subtitle: Column(
                                     crossAxisAlignment:
@@ -199,25 +236,25 @@ class _ImportarCortesViewState extends State<ImportarCortesView> {
                                     children: [
                                       Text(
                                         'Categoría: ${punto['dNcat'] ?? 'Desconocida'}',
-                                        style: TextStyle(fontSize: 12),
+                                        style: const TextStyle(fontSize: 12),
                                       ),
                                       Text(
                                         'Código Fijo: ${punto['bscntCodf'] ?? 'N/A'}',
-                                        style: TextStyle(fontSize: 12),
+                                        style: const TextStyle(fontSize: 12),
                                       ),
                                       Text(
                                         'Latitud: ${punto['bscntlati'] ?? 'N/A'}, Longitud: ${punto['bscntlogi'] ?? 'N/A'}',
-                                        style: TextStyle(fontSize: 12),
+                                        style: const TextStyle(fontSize: 12),
                                       ),
                                       Text(
                                         'Deuda: ${punto['bscocImor'] ?? '0.0'} USD | Mora: ${punto['bscocNmor'] ?? '0'} meses',
-                                        style: TextStyle(fontSize: 12),
+                                        style: const TextStyle(fontSize: 12),
                                       ),
                                       if (punto['dLotes'] != null &&
                                           punto['dLotes']!.isNotEmpty)
                                         Text(
                                           'Lote: ${punto['dLotes']}',
-                                          style: TextStyle(fontSize: 12),
+                                          style: const TextStyle(fontSize: 12),
                                         ),
                                     ],
                                   ),
@@ -226,7 +263,7 @@ class _ImportarCortesViewState extends State<ImportarCortesView> {
                                     children: [
                                       Text(
                                         'ID: ${punto['bscocNcoc'] ?? 'N/A'}',
-                                        style: TextStyle(fontSize: 12),
+                                        style: const TextStyle(fontSize: 12),
                                       ),
                                     ],
                                   ),

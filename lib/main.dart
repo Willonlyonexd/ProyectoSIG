@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:proyecto_sig/views/login_view.dart';
+import 'package:proyecto_sig/views/prueba_view.dart';
 import 'views/home_view.dart';
 import 'views/lectura_view.dart';
 import 'views/cortes_view.dart';
@@ -17,6 +18,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: true,
       title: 'Menú Principal',
       theme: ThemeData(
         primarySwatch: Colors.blue,
